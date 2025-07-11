@@ -1,5 +1,7 @@
 package com.benchmgmt.config;
 
+import com.benchmgmt.repository.AdminRepository;
+import com.benchmgmt.repository.TrainerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -23,9 +25,19 @@ public class SecurityConfig {
     }
 
     @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtService jwtService,
+            AdminRepository adminRepo,
+            TrainerRepository trainerRepo
+    ) {
+        return new JwtAuthenticationFilter(jwtService, adminRepo, trainerRepo);
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults())
@@ -57,10 +69,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-    // REMOVED: AuthenticationManager - not needed for JWT authentication
-    // Manual password verification is done in the service layer
-
-    // REMOVED: DaoAuthenticationProvider - not needed for JWT authentication
-    // The JWT filter handles authentication directly
 }
