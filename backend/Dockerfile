@@ -1,17 +1,17 @@
-# Use OpenJDK base image
 FROM openjdk:21-jdk-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy Gradle project files
 COPY . .
 
-# Build the app
+# 🔥 Make gradlew executable
+RUN chmod +x ./gradlew
+
+# 🔨 Build the Spring Boot app
 RUN ./gradlew build
 
-# Expose Spring Boot default port
+# 🌐 Expose port
 EXPOSE 8080
 
-# Run the app from the built JAR
+# 🚀 Start the app
 CMD ["java", "-jar", "build/libs/bench-management-backend-0.0.1-SNAPSHOT.jar"]
