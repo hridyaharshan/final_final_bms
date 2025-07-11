@@ -1,7 +1,5 @@
 package com.benchmgmt.config;
 
-import com.benchmgmt.repository.AdminRepository;
-import com.benchmgmt.repository.TrainerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -18,20 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(
-            JwtService jwtService,
-            AdminRepository adminRepo,
-            TrainerRepository trainerRepo
-    ) {
-        return new JwtAuthenticationFilter(jwtService, adminRepo, trainerRepo);
-    }
+    // Remove the @Bean method for JwtAuthenticationFilter
+    // Keep @Component on JwtAuthenticationFilter class
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,11 +25,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - these should bypass JWT entirely
                         .requestMatchers(
                                 "/bms/admin/login",
                                 "/bms/admin/register",
@@ -51,20 +37,15 @@ public class SecurityConfig {
                                 "/bms/trainer/register",
                                 "/bms/interviews/**"
                         ).permitAll()
-
-                        // Role-based access control
                         .requestMatchers("/bms/admin/**").hasRole("ADMIN")
                         .requestMatchers("/bms/trainer/**").hasRole("TRAINER")
                         .requestMatchers("/bms/assessment/**", "/bms/scores/**", "/bms/details/**")
                         .hasAnyRole("ADMIN", "TRAINER")
-
-                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Add JWT filter before the default authentication filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
