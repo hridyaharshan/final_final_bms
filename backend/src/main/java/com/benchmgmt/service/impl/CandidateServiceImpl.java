@@ -25,7 +25,7 @@ public class CandidateServiceImpl implements CandidateService {
 
     // Helper method to check if interview is successful
     private boolean isInterviewSuccessful(InterviewStatus status) {
-        return status == InterviewStatus.PASSED || status == InterviewStatus.SUCESS;
+        return  status == InterviewStatus.SUCESS;
     }
 
     @Override
